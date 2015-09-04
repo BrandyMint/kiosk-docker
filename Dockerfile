@@ -1,6 +1,6 @@
 # Pull base image.
 FROM ubuntu:14.04
-
+MAINTAINER d.khabarov@brandymint.ru
 # Install.
 ENV DEBIAN_FRONTEND noninteractive
 RUN \
@@ -49,12 +49,17 @@ RUN git clone https://github.com/BrandyMint/kiosk.git && \
   bash -c "$HOME/.rbenv/bin/rbenv exec gem install bundler" && \
   bash -c "$HOME/.rbenv/bin/rbenv exec bundle install --without development test"
 
+
+# forward ruby logs to Docker log collector
+RUN ln -sf /dev/stdout /var/www/kiosk/unicorn.stdout.log && \
+    ln -sf /dev/stderr /var/www/kiosk/unicorn.stderr.log && \
+    ln -sf /dev/stdout /var/www/kiosk/production.log
+
 # Define default command.
 USER www-data
-EXPOSE 3000
+EXPOSE 8080
 ENV RAILS_ENV production
 ENV APP_ROOT /var/www/kiosk
-ENV PWD /var/www/kiosk
 ENV PATH "/var/www/.rbenv/shims:/var/www/.rbenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games"
 WORKDIR /var/www/kiosk
-CMD ["/var/www/.rbenv/bin/rbenv", "exec", "bundle", "exec", "rails", "server"]
+CMD ["/var/www/.rbenv/bin/rbenv", "exec", "bundle", "exec", "unicorn"]

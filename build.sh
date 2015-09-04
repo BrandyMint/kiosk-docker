@@ -1,3 +1,3 @@
 #/bin/sh
 
-docker build --no-cache -t kiosk-public .
+docker build --no-cache -t kiosk-public:$VERSION .
